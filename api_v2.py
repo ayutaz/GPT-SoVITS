@@ -104,6 +104,7 @@ now_dir = os.getcwd()
 sys.path.append(now_dir)
 sys.path.append("%s/GPT_SoVITS" % (now_dir))
 
+import traceback
 import argparse
 import subprocess
 import wave
@@ -120,6 +121,7 @@ from GPT_SoVITS.TTS_infer_pack.TTS import TTS, TTS_Config
 from GPT_SoVITS.TTS_infer_pack.text_segmentation_method import get_method_names as get_cut_method_names
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+import ffmpeg
 # print(sys.path)
 i18n = I18nAuto()
 cut_method_names = get_cut_method_names()
@@ -329,7 +331,17 @@ async def tts_handle(req:dict):
             audio_data = pack_audio(BytesIO(), audio_data, sr, media_type).getvalue()
             return Response(audio_data, media_type=f"audio/{media_type}")
     except Exception as e:
-        return JSONResponse(status_code=400, content={"message": f"tts failed", "Exception": str(e)})
+        traceback_str = traceback.format_exc()
+        print(f"Error occurred: {e}")
+        print(f"Traceback: {traceback_str}")
+        return JSONResponse(
+            status_code=400,
+            content={
+                "message": "tts failed",
+                "Exception": str(e),
+                "Traceback": traceback_str
+            }
+        )
     
 
 
